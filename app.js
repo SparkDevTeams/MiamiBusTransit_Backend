@@ -5,6 +5,18 @@ const fetch = require("node-fetch");
 const hostname = "127.0.0.1";
 const port = 3000;
 
+let time = [];
+let legInfo = [];
+
+/*
+/ fromPlace
+/ toPlace
+/ time
+/ date
+/ mode
+/ maxWalkDistance
+/ arriveBy
+*/
 fetch(
     "http://localhost:8080/otp/routers/default/plan?fromPlace=25.863771,-80.331855&toPlace=25.79594,-80.25834&time=3:54pm&date=1-31-2020&mode=TRANSIT,WALK&maxWalkDistance=500&arriveBy=false"
 )
@@ -25,12 +37,26 @@ function getPolyline(jsonLegData) {
 
 //Function that will parse the api call and return the important stuff
 function jsonParsing(jsonData, jsonLegData) {
-    let polylines = getPolyline(jsonLegData);   
-    console.log(polylines);
-    let routeDuration = jsonData.itineraries[0].duration;
-    console.log("Route Duration: " + routeDuration/60 + " minutes.");
-    //console.log(jsonData.itineraries[0]);
-    //console.log(jsonLegData[0].legGeometry.points);
+    time.push({
+        walkingTime : jsonData.itineraries[0].walkTime,
+        transitTime : jsonData.itineraries[0].transitTime,
+        waitingTime : jsonData.itineraries[0].waitingTime,
+        start : jsonData.itineraries[0].startTime,
+        end : jsonData.itineraries[0].endTime,
+        transfers : jsonData.itineraries[0].transfers,
+    });
+    for (j=0; j < jsonLegData.length; j++) {
+        legInfo.push({ currentLeg:j + 1,
+            transitMode:jsonLegData[j].mode, 
+            legDuration : (jsonLegData[j].endTime - jsonLegData[j].startTime) / 1000,
+            departurePlace : jsonLegData[j].from.name,
+            departureTime : jsonLegData[j].from.departure,
+            arrivalPlace : jsonLegData[j].to.name,
+            arrivalTime : jsonLegData[j].to.arrival,
+            legPolyline : jsonLegData[j].legGeometry.points});
+    }
+    console.log(time);
+    console.log(legInfo);
 }
 
 function decodeGeometry(encoded) {
@@ -38,8 +64,6 @@ function decodeGeometry(encoded) {
     let decoded = polyline.decode(encoded);
     return decoded;
 }
-
-let decodedArray = decodeGeometry("coz|CbyhiN@z@JR~AvAnApA`@`@aAvA]f@II");
 
 //let coordinates = decoded[0];
 for (i = 0; i < decodedArray.length; i++) {
