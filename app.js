@@ -1,6 +1,7 @@
 const http = require("http");
 const polyline = require("@mapbox/polyline");
 const fetch = require("node-fetch");
+const express = require("express");
 
 const hostname = "127.0.0.1";
 const port = 3000;
@@ -18,25 +19,15 @@ let legInfo = [];
 / arriveBy
 */
 fetch(
-    "http://localhost:8080/otp/routers/default/plan?fromPlace=25.863771,-80.331855&toPlace=25.79594,-80.25834&time=3:54pm&date=1-31-2020&mode=TRANSIT,WALK&maxWalkDistance=500&arriveBy=false"
+    "http://localhost:8080/otp/routers/default/plan?fromPlace=25.863925,-80.331163&toPlace=25.773868,-80.336200&time=6:54pm&date=2-12-2020&mode=TRANSIT,WALK&maxWalkDistance=500&arriveBy=false"
 )
     .then(res => res.json())
     .then(body => jsonParsing(body.plan, body.plan.itineraries[0].legs))
     .catch(err => console.log(err));
 
-//returns the polyline for all steps in an itinerary
-function getPolyline(jsonLegData) {
-    var polylineArray = [jsonLegData[0].legGeometry.points];
-    for (i = 1; i < jsonLegData.length; i++) {
-        polylineArray = polylineArray.concat([
-            jsonLegData[i].legGeometry.points
-        ]);
-    }
-    return polylineArray;
-}
-
 //Function that will parse the api call and return the important stuff
 function jsonParsing(jsonData, jsonLegData) {
+    console.log(jsonData.to.lat);
     time.push({
         walkingTime : jsonData.itineraries[0].walkTime,
         transitTime : jsonData.itineraries[0].transitTime,
@@ -63,11 +54,6 @@ function decodeGeometry(encoded) {
     //returns an array of long and lat each element corresponding to a point
     let decoded = polyline.decode(encoded);
     return decoded;
-}
-
-//let coordinates = decoded[0];
-for (i = 0; i < decodedArray.length; i++) {
-    console.log(decodedArray[i]);
 }
 
 const server = http.createServer((req, res) => {
