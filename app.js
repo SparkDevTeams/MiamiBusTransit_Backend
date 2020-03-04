@@ -15,7 +15,8 @@ app.use(express.json());
 
 //Post request that will handle returning the json of route info
 app.post('/', (req, res) => {
-    res.send(req.body);
+    OTP_Call(urlCreator(req.body));
+    res.send(time, legInfo);
 });
 
 //This fetch would be a seperate function called from the urlCreator with the created url
@@ -26,13 +27,20 @@ fetch(
     .then(body => jsonParsing(body.plan, body.plan.itineraries[0].legs))
     .catch(err => console.log(err));
 
+function OTP_Call(URL) {
+    fetch (URL)
+    .then(res => res.json())
+    .then(body => jsonParsing(body.plan, body.plan.itineraries[0].legs))
+    .catch(err => console.log(err));
+}
+
 //Function to create the URL to make the call to the OTP API
 function urlCreator(reqBody) {
     fromPlace = reqBody.fromPlace;
     toPlace = reqBody.toPlace;
     startTime = reqBody.startTime;
     startDate = reqBody.start;
-    url = 'http://' + otpHost + '/otp/routers/default/plan?fromPlace=' + fromPlace + '&toPlace=' + toPlace + '&time=' + startTime + '&date=' + startDate + '&mode=TRANSIT,WALK&maxWalkDistance=500&arriveBy=false';
+    return url = 'http://' + otpHost + '/otp/routers/default/plan?fromPlace=' + fromPlace + '&toPlace=' + toPlace + '&time=' + startTime + '&date=' + startDate + '&mode=TRANSIT,WALK&maxWalkDistance=500&arriveBy=false';
 }
 
 //Function that will parse the api call and return the important stuff
