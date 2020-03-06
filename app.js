@@ -15,31 +15,30 @@ app.use(express.json());
 
 //Post request that will handle returning the json of route info
 app.post('/', (req, res) => {
-    OTP_Call(urlCreator(req.body));
-    res.send(time, legInfo);
+    console.log(req.body);
+    let url = urlCreator(req.body)
+    console.log(url);
+   fetch(url).then( async (response) => {
+       let body = await response.json();
+    res.send(jsonParsing(body.plan, body.plan.itineraries[0].legs));
+   });
 });
 
 //This fetch would be a seperate function called from the urlCreator with the created url
-fetch(
-    "http://localhost:8080/otp/routers/default/plan?fromPlace=25.863925,-80.331163&toPlace=25.773868,-80.336200&time=6:54pm&date=2-12-2020&mode=TRANSIT,WALK&maxWalkDistance=500&arriveBy=false"
-)
-    .then(res => res.json())
-    .then(body => jsonParsing(body.plan, body.plan.itineraries[0].legs))
-    .catch(err => console.log(err));
+// fetch(
+//     "http://localhost:8080/otp/routers/default/plan?fromPlace=25.863925,-80.331163&toPlace=25.773868,-80.336200&time=6:54pm&date=2-12-2020&mode=TRANSIT,WALK&maxWalkDistance=500&arriveBy=false"
+// )
+//     .then(res => res.json())
+//     .then(body => jsonParsing(body.plan, body.plan.itineraries[0].legs))
+//     .catch(err => console.log(err));
 
-function OTP_Call(URL) {
-    fetch (URL)
-    .then(res => res.json())
-    .then(body => jsonParsing(body.plan, body.plan.itineraries[0].legs))
-    .catch(err => console.log(err));
-}
 
 //Function to create the URL to make the call to the OTP API
 function urlCreator(reqBody) {
     fromPlace = reqBody.fromPlace;
     toPlace = reqBody.toPlace;
     startTime = reqBody.startTime;
-    startDate = reqBody.start;
+    startDate = reqBody.startDate;
     return url = 'http://' + otpHost + '/otp/routers/default/plan?fromPlace=' + fromPlace + '&toPlace=' + toPlace + '&time=' + startTime + '&date=' + startDate + '&mode=TRANSIT,WALK&maxWalkDistance=500&arriveBy=false';
 }
 
@@ -63,7 +62,7 @@ function jsonParsing(jsonData, jsonLegData) {
             arrivalTime : jsonLegData[j].to.arrival,
             legPolyline : decodeGeometry(jsonLegData[j].legGeometry.points)});
     }
-    console.log(time, legInfo);
+    return {time, legInfo};
 }
 
 function decodeGeometry(encoded) {
